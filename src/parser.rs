@@ -183,4 +183,15 @@ mod test {
         vec![Num(100)],
     )
   }
+
+  #[test]
+  fn test_parse_block() {
+    let input = "1 1 + }";
+    let words: Vec<_> = input.split(" ").collect();
+    let (res, _) = parse_block(&words);
+    assert_eq!(
+      res,
+      Block(vec![Num(1), Num(1), Op("+")]),
+    )
+  }
 }
