@@ -114,6 +114,59 @@ fn parse_block<'src, 'a>(
 mod test {
   use super::*;
   use crate::value::Value::*;
+  
+  mod ops {
+    use super::*;
+
+    #[test]
+    fn test_add() {
+      let mut stack = vec![Num(10), Num(10)];
+      add(&mut stack);
+      let res = stack.last().unwrap().as_num();
+      
+      assert_eq!(
+        res,
+        20,
+      )
+    }
+
+    #[test]
+    fn test_sub() {
+      let mut stack = vec![Num(10), Num(10)];
+      sub(&mut stack);
+      let res = stack.last().unwrap().as_num();
+      
+      assert_eq!(
+        res,
+        0,
+      )
+    }
+
+    #[test]
+    fn test_mul() {
+      let mut stack = vec![Num(10), Num(10)];
+      mul(&mut stack);
+      let res = stack.last().unwrap().as_num();
+      
+      assert_eq!(
+        res,
+        100,
+      )
+    }
+
+    #[test]
+    fn test_div() {
+      let mut stack = vec![Num(10), Num(10)];
+      div(&mut stack);
+      let res = stack.last().unwrap().as_num();
+      
+      assert_eq!(
+        res,
+        1,
+      )
+    }
+    
+  }
 
   #[test]
   fn test_group() {
