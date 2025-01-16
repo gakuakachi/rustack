@@ -2,6 +2,7 @@
 pub enum Value<'src> {
     Num(i32),
     Op(&'src str),
+    Symbol(&'src str),
     Block(Vec<Value<'src>>),
 }
 
