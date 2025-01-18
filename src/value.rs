@@ -19,4 +19,10 @@ impl <'src> Value<'src> {
             _ => panic!("value is not number"),
         }
     }
+    pub fn as_str(&self) -> &'src str {
+        match self {
+            Self::Symbol(val) => val,
+            _ => panic!("value is not str"),
+        }
+    }
 }

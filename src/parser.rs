@@ -1,28 +1,26 @@
 use crate::value::Value;
 use crate::Vm;
 
-fn add(vm: &mut Vm) {
-  let lhs = vm.stack.pop().unwrap().as_num();
-  let rhs = vm.stack.pop().unwrap().as_num();
-  vm.stack.push(Value::Num(lhs + rhs));
+macro_rules! impl_op {
+  ($name:ident, $op:tt) => {
+    fn $name(vm: &mut Vm) {
+      let rhs = vm.stack.pop().unwrap().as_num();
+      let lhs = vm.stack.pop().unwrap().as_num();
+      vm.stack.push(Value::Num((lhs $op rhs) as i32));
+    }
+  }
 }
 
-fn sub(vm: &mut Vm) {
-  let lhs = vm.stack.pop().unwrap().as_num();
-  let rhs = vm.stack.pop().unwrap().as_num();
-  vm.stack.push(Value::Num(lhs - rhs));
-}
+impl_op!(add, +);
+impl_op!(sub, -);
+impl_op!(mul, *);
+impl_op!(div, /);
+impl_op!(lt, <); 
 
-fn mul(vm: &mut Vm) {
-  let lhs = vm.stack.pop().unwrap().as_num();
-  let rhs = vm.stack.pop().unwrap().as_num();
-  vm.stack.push(Value::Num(lhs * rhs));
-}
-
-fn div(vm: &mut Vm) {
-  let lhs = vm.stack.pop().unwrap().as_num();
-  let rhs = vm.stack.pop().unwrap().as_num();
-  vm.stack.push(Value::Num(lhs / rhs));
+fn op_def(vm: &mut Vm) {
+  let val = vm.stack.pop().unwrap();
+  let var = vm.stack.pop().unwrap().as_str();
+  vm.vars.insert(var, val);
 }
 
 fn op_if(vm: &mut Vm) {
@@ -54,9 +52,15 @@ fn eval<'src>(code: Value<'src>, vm: &mut Vm<'src>) {
           "-" => sub(vm),
           "*" => mul(vm),
           "/" => div(vm),
+          "def" => op_def(vm),
           "if" => op_if(vm),
-          _ => panic!("{code:?} could not be parsed"),
-      }
+          _ => {
+            let val = vm.vars.get(op).expect(&format!(
+              "{op:?} is not a defined operation"
+            ));
+            vm.stack.push(val.clone());
+          },
+      },
       _ => vm.stack.push(code.clone()),
   }
 }
@@ -67,18 +71,21 @@ pub fn parse<'a>(line: &'a str) -> Vm<'a> {
   let mut words = &input[..];
 
   while let Some((&word, mut rest)) = words.split_first() {
-      if word == "{" {
-          let value;
-          (value, rest) = parse_block(rest);
-          vm.stack.push(value);
+    if word == "{" {
+      let value;
+      (value, rest) = parse_block(rest);
+      vm.stack.push(value);
+    } else {
+      let code = if let Ok(parsed) = word.parse::<i32>() {
+        Value::Num(parsed)
+      } else if word.starts_with("/") {
+        Value::Symbol(&word[1..])
       } else {
-          if let Ok(parsed) = word.parse::<i32>() {
-              vm.stack.push(Value::Num(parsed));
-          } else {
-              eval(Value::Op(word), &mut vm);
-          }                        
-      }
-      words = rest;
+        Value::Op(word)
+      };
+      eval(code, &mut vm);
+    }
+    words = rest;
   }
   vm
 }
@@ -90,22 +97,27 @@ fn parse_block<'src, 'a>(
   let mut words = input;
 
   while let Some((&word, mut rest)) = words.split_first() {
-      if word.is_empty() {
-          break;
-      }
+    if word.is_empty() {
+      break;
+    }
 
-      if word == "{" {
-          let value;
-          (value, rest) = parse_block(rest);
-          tokens.push(value);
-      } else if word == "}" {
-          return (Value::Block(tokens), rest);
-      } else if let Ok(value) = word.parse::<i32>() {
-          tokens.push(Value::Num(value));
+    if word == "{" {
+      let value;
+      (value, rest) = parse_block(rest);
+      tokens.push(value);
+    } else if word == "}" {
+      return (Value::Block(tokens), rest);
+    } else {
+      let code = if let Ok(value) = word.parse::<i32>() {
+        Value::Num(value)
+      } else if word.starts_with("/"){
+        Value::Symbol(&word[1..])
       } else {
-          tokens.push(Value::Op(word));
-      }
-      words = rest;
+        Value::Op(word)
+      };
+      tokens.push(code);
+    }
+    words = rest;
   }
   (Value::Block(tokens), words)
 }
@@ -180,6 +192,20 @@ mod test {
         res,
         1,
       )
+    }
+    
+    #[test]
+    fn test_op_def() {
+      let mut vm = Vm {
+        stack: vec![Symbol("test"), Num(10)],
+        vars: HashMap::new(),
+      };
+
+      op_def(&mut vm);
+
+      let res = vm.vars.get("test").unwrap().as_num();
+      
+      assert_eq!(res, 10);
     }
     
   }
