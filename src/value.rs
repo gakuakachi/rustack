@@ -1,16 +1,16 @@
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum Value<'src> {
+pub enum Value {
     Num(i32),
-    Op(&'src str),
-    Symbol(&'src str),
-    Block(Vec<Value<'src>>),
+    Op(String),
+    Symbol(String),
+    Block(Vec<Value>),
 }
 
-impl <'src> Value<'src> {
-    pub fn as_block_vec(self) -> Vec<Value<'src>> {
+impl Value {
+    pub fn as_block_vec(self) -> Vec<Value> {
         match self {
             Self::Block(val) => val,
-            _ => panic!("Value is not a block")
+            _ => panic!("Value is not a block"),
         }
     }
     pub fn as_num(&self) -> i32 {
@@ -19,10 +19,12 @@ impl <'src> Value<'src> {
             _ => panic!("value is not number"),
         }
     }
-    pub fn as_str(&self) -> &'src str {
+    pub fn to_string(&self) -> String {
         match self {
-            Self::Symbol(val) => val,
-            _ => panic!("value is not str"),
+            Self::Num(num) => num.to_string(),
+            Self::Symbol(val) => val.to_owned(),
+            Self::Op(op) => op.to_owned(),
+            Self::Block(_) => "<Block>".to_owned(),
         }
     }
 }

@@ -2,14 +2,15 @@ mod parser;
 mod value;
 
 use std::collections::HashMap;
+use std::env;
 use value::Value;
 
-struct Vm<'src> {
-    stack: Vec<Value<'src>>,
-    vars: HashMap<&'src str, Value<'src>>,
+struct Vm {
+    stack: Vec<Value>,
+    vars: HashMap<String, Value>,
 }
 
-impl<'src> Vm<'src> {
+impl Vm {
     fn new() -> Self {
         Self {
             stack: Vec::new(),
@@ -19,7 +20,9 @@ impl<'src> Vm<'src> {
 }
 
 fn main() {
+    if let Some(f) = env::args().nth(1).and_then(|f| std::fs::File::open(f).ok()) {}
+    let mut vm = Vm::new();
     for raw_line in std::io::stdin().lines().flatten() {
-        parser::parse(&raw_line);
+        parser::parse(&raw_line, &mut vm);
     }
 }
