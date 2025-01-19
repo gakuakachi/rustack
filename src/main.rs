@@ -20,7 +20,11 @@ impl Vm {
 }
 
 fn main() {
-    if let Some(f) = env::args().nth(1).and_then(|f| std::fs::File::open(f).ok()) {}
+    // if let Some(f) = env::args().nth(1).and_then(|f| std::fs::File::open(f).ok()) {
+	// 	parse_batch(BufReader::new(f));
+	// } else {
+	// 	parse_interactive();
+	// }
     let mut vm = Vm::new();
     for raw_line in std::io::stdin().lines().flatten() {
         parser::parse(&raw_line, &mut vm);
