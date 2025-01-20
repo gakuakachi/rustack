@@ -1,6 +1,6 @@
-use super::eval;
-use crate::Vm;
+use super::core::eval;
 use crate::value::Value;
+use crate::Vm;
 
 macro_rules! impl_op {
 	($name:ident, $op:tt) => {
@@ -54,71 +54,75 @@ pub fn op_if(vm: &mut Vm) {
 #[cfg(test)]
 mod test {
     use super::*;
-	use crate::value::Value::*;
-	use std::collections::HashMap;
+    use crate::value::Value::*;
+    use std::collections::HashMap;
 
+    #[test]
+    fn test_add() {
+        let mut vm = Vm {
+            stack: vec![Num(10), Num(10)],
+            vars: HashMap::new(),
+            blocks: Vec::new(),
+        };
+        add(&mut vm);
+        let res = vm.stack.last().unwrap().as_num();
 
-	#[test]
-	fn test_add() {
-		let mut vm = Vm {
-			stack: vec![Num(10), Num(10)],
-			vars: HashMap::new(),
-		};
-		add(&mut vm);
-		let res = vm.stack.last().unwrap().as_num();
+        assert_eq!(res, 20,)
+    }
 
-		assert_eq!(res, 20,)
-	}
+    #[test]
+    fn test_sub() {
+        let mut vm = Vm {
+            stack: vec![Num(10), Num(10)],
+            vars: HashMap::new(),
+            blocks: Vec::new(),
+        };
+        sub(&mut vm);
+        let res = vm.stack.last().unwrap().as_num();
 
-	#[test]
-	fn test_sub() {
-		let mut vm = Vm {
-			stack: vec![Num(10), Num(10)],
-			vars: HashMap::new(),
-		};
-		sub(&mut vm);
-		let res = vm.stack.last().unwrap().as_num();
+        assert_eq!(res, 0,)
+    }
 
-		assert_eq!(res, 0,)
-	}
+    #[test]
+    fn test_mul() {
+        let mut vm = Vm {
+            stack: vec![Num(10), Num(10)],
+            vars: HashMap::new(),
+            blocks: Vec::new(),
+        };
 
-	#[test]
-	fn test_mul() {
-		let mut vm = Vm {
-			stack: vec![Num(10), Num(10)],
-			vars: HashMap::new(),
-		};
+        mul(&mut vm);
+        let res = vm.stack.last().unwrap().as_num();
 
-		mul(&mut vm);
-		let res = vm.stack.last().unwrap().as_num();
+        assert_eq!(res, 100,)
+    }
 
-		assert_eq!(res, 100,)
-	}
+    #[test]
+    fn test_div() {
+        let mut vm = Vm {
+            stack: vec![Num(10), Num(10)],
+            vars: HashMap::new(),
+            blocks: Vec::new(),
+        };
 
-	#[test]
-	fn test_div() {
-		let mut vm = Vm {
-			stack: vec![Num(10), Num(10)],
-			vars: HashMap::new(),
-		};
+        div(&mut vm);
+        let res = vm.stack.last().unwrap().as_num();
 
-		div(&mut vm);
-		let res = vm.stack.last().unwrap().as_num();
+        assert_eq!(res, 1,)
+    }
 
-		assert_eq!(res, 1,)
-	}
+    #[test]
+    fn test_op_def() {
+        let mut vm = Vm {
+            stack: vec![Symbol("test".to_owned()), Num(10)],
+            vars: HashMap::new(),
+            blocks: Vec::new(),
+        };
 
-	#[test]
-	fn test_op_def() {
-		let mut vm = Vm {
-			stack: vec![Symbol("test".to_owned()), Num(10)],
-			vars: HashMap::new(),
-		};
+        op_def(&mut vm);
 
-		op_def(&mut vm);
+        let res = vm.vars.get("test").unwrap().as_num();
 
-		let res = vm.vars.get("test").unwrap().as_num();
-
-		assert_eq!(res, 10);
-	}
+        assert_eq!(res, 10);
+    }
 }
