@@ -18,6 +18,18 @@ impl_op!(mul, *);
 impl_op!(div, /);
 impl_op!(lt, <);
 
+pub fn duplicate(vm: &mut Vm) {
+    let value = vm.stack.last().unwrap();
+    vm.stack.push(value.clone());
+}
+
+pub fn exchange(vm: &mut Vm) {
+    let x = vm.stack.pop().unwrap();
+    let y = vm.stack.pop().unwrap();
+    vm.stack.push(x);
+    vm.stack.push(y);
+}
+
 pub fn op_def(vm: &mut Vm) {
     let val = vm.stack.pop().unwrap();
     let var = vm.stack.pop().unwrap().to_string();
@@ -124,5 +136,28 @@ mod test {
         let res = vm.vars.get("test").unwrap().as_num();
 
         assert_eq!(res, 10);
+    }
+
+    #[test]
+    fn test_duplicate() {
+        let mut vm = Vm {
+            stack: vec![Num(10)],
+            vars: HashMap::new(),
+            blocks: Vec::new(),
+        };
+
+        duplicate(&mut vm);
+        assert_eq!(vm.stack, vec![Num(10), Num(10)]);        
+    }
+
+    #[test]
+    fn test_exchange() {
+        let mut vm = Vm {
+            stack: vec![Num(10), Num(20)],
+            vars: HashMap::new(),
+            blocks: Vec::new(),
+        };
+        exchange(&mut vm);
+        assert_eq!(vm.stack, vec![Num(20), Num(10)]);
     }
 }

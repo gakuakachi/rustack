@@ -2,7 +2,7 @@ use super::operations;
 use crate::value::Value;
 use crate::Vm;
 
-pub fn eval<'src>(code: Value, vm: &mut Vm) {
+pub fn eval(code: Value, vm: &mut Vm) {
     if let Some(top_block) = vm.blocks.last_mut() {
         top_block.push(code);
         return;
@@ -18,12 +18,22 @@ pub fn eval<'src>(code: Value, vm: &mut Vm) {
             "def" => operations::op_def(vm),
             "if" => operations::op_if(vm),
             "puts" => operations::op_puts(vm),
+            "dup" => operations::duplicate(vm),
+            "swap" => operations::exchange(vm),
             _ => {
                 let val = vm
                     .vars
                     .get(&op)
                     .expect(&format!("{op:?} is not a defined operation"));
-                vm.stack.push(val.clone());
+                match val {
+                    Value::Block(block) => {
+                        for code in block.clone() {
+                            eval(code, vm);
+                        }
+                    },
+                    Value::Native(op) => op.0(vm),
+                    _ => vm.stack.push(val.clone()),
+                }
             }
         },
         _ => vm.stack.push(code.clone()),
@@ -74,4 +84,12 @@ mod test {
         let stack = parse_batch(input);
         assert_eq!(stack, vec![Num(100)]);
     }
+
+    #[test]
+    fn test_function() {
+        let input = Cursor::new("10 /square { dup * } def square");
+        let stack = parse_batch(input);
+        assert_eq!(stack, vec![Num(100)]);
+    }
+
 }
