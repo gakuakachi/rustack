@@ -1,0 +1,14 @@
+/factorial { 1 factorial_impl } def
+/factorial_impl {
+ /acc swap def
+ /n swap def
+ { n 2 < }
+ { acc }
+ {
+  n 1 -
+  acc n *
+  factorial_impl
+ }
+ if
+} def
+5 factorial

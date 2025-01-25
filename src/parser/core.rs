@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use super::operations;
 use crate::value::Value;
 use crate::Vm;
@@ -22,14 +24,15 @@ pub fn eval(code: Value, vm: &mut Vm) {
             "swap" => operations::exchange(vm),
             _ => {
                 let val = vm
-                    .vars
-                    .get(&op)
+                    .find_var(&op)
                     .expect(&format!("{op:?} is not a defined operation"));
                 match val {
                     Value::Block(block) => {
+                        vm.vars.push(HashMap::new());
                         for code in block.clone() {
                             eval(code, vm);
                         }
+                        vm.vars.pop();
                     },
                     Value::Native(op) => op.0(vm),
                     _ => vm.stack.push(val.clone()),

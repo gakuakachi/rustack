@@ -33,7 +33,8 @@ pub fn exchange(vm: &mut Vm) {
 pub fn op_def(vm: &mut Vm) {
     let val = vm.stack.pop().unwrap();
     let var = vm.stack.pop().unwrap().to_string();
-    vm.vars.insert(var, val);
+    let h = vm.vars.last_mut().unwrap();
+    h.insert(var, val);
 }
 
 pub fn op_puts(vm: &mut Vm) {
@@ -65,15 +66,16 @@ pub fn op_if(vm: &mut Vm) {
 
 #[cfg(test)]
 mod test {
+    use std::collections::HashMap;
+
     use super::*;
     use crate::value::Value::*;
-    use std::collections::HashMap;
 
     #[test]
     fn test_add() {
         let mut vm = Vm {
             stack: vec![Num(10), Num(10)],
-            vars: HashMap::new(),
+            vars: Vec::new(),
             blocks: Vec::new(),
         };
         add(&mut vm);
@@ -86,7 +88,7 @@ mod test {
     fn test_sub() {
         let mut vm = Vm {
             stack: vec![Num(10), Num(10)],
-            vars: HashMap::new(),
+            vars: Vec::new(),
             blocks: Vec::new(),
         };
         sub(&mut vm);
@@ -99,41 +101,41 @@ mod test {
     fn test_mul() {
         let mut vm = Vm {
             stack: vec![Num(10), Num(10)],
-            vars: HashMap::new(),
+            vars: Vec::new(),
             blocks: Vec::new(),
         };
 
         mul(&mut vm);
         let res = vm.stack.last().unwrap().as_num();
 
-        assert_eq!(res, 100,)
+        assert_eq!(res, 100)
     }
 
     #[test]
     fn test_div() {
         let mut vm = Vm {
             stack: vec![Num(10), Num(10)],
-            vars: HashMap::new(),
+            vars: Vec::new(),
             blocks: Vec::new(),
         };
 
         div(&mut vm);
         let res = vm.stack.last().unwrap().as_num();
 
-        assert_eq!(res, 1,)
+        assert_eq!(res, 1)
     }
 
     #[test]
     fn test_op_def() {
         let mut vm = Vm {
             stack: vec![Symbol("test".to_owned()), Num(10)],
-            vars: HashMap::new(),
+            vars: vec![HashMap::new()],
             blocks: Vec::new(),
         };
 
         op_def(&mut vm);
 
-        let res = vm.vars.get("test").unwrap().as_num();
+        let res = vm.find_var("test").unwrap().as_num();
 
         assert_eq!(res, 10);
     }
@@ -142,7 +144,7 @@ mod test {
     fn test_duplicate() {
         let mut vm = Vm {
             stack: vec![Num(10)],
-            vars: HashMap::new(),
+            vars: Vec::new(),
             blocks: Vec::new(),
         };
 
@@ -154,7 +156,7 @@ mod test {
     fn test_exchange() {
         let mut vm = Vm {
             stack: vec![Num(10), Num(20)],
-            vars: HashMap::new(),
+            vars: Vec::new(),
             blocks: Vec::new(),
         };
         exchange(&mut vm);

@@ -69,5 +69,25 @@ mod tests {
             vec![Value::Num(500)],
         )
     }
-    
+
+    #[test]
+    fn test_factorial_txt() {
+        let buf = read_test_file("tests/factorial.txt");
+        let res = parse_batch(buf);
+        assert_eq!(
+            res,
+            vec![Value::Num(120)],
+        )
+    }
+
+    #[test]
+    fn test_fib_txt() {
+        let buf = read_test_file("tests/fib.txt");
+        let res = parse_batch(buf);
+        assert_eq!(
+            res,
+            vec![Value::Num(55)],
+        )
+    }
+
 }
